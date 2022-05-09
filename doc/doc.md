@@ -3,7 +3,7 @@ Autoren:
         Martin Klose
         Florian Neufeld
     2.Gruppe
-        Konstantin
+        Konstantin Daitche
         Kamil Jurczenko
 Sprecher:
     Kamil Jurczenko 
