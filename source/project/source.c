@@ -4,8 +4,10 @@ Project:
 
 Original authors:
 (sorted by lastname)
-	-
-	-
+	Daitche Konstantin
+	Jurczenko Kamil
+	Kose Martin
+	Neufeld Florian
 
 *********************************************************************/
 
