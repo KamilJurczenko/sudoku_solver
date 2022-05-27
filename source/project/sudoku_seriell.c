@@ -1,3 +1,14 @@
+/********************************************************************
+
+Project:
+
+Original authors:
+(sorted by lastname)
+	Daitche Konstantin
+	Jurczenko Kamil
+
+*********************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -112,6 +123,72 @@ int solveSudoku(int grid[N][N], int row, int col)
 	return 0;
 }
 
+
+//Abwandlung von solveSudoku.
+//Printet alle möglichen Spielfeld Kombination für maxStellen aus.
+int teilSudokus(int grid[N][N], int row, int col, int maxStellen, int stelle)
+{
+
+	// Check if we have reached the 8th row
+	// and 9th column (0
+	// indexed matrix) , we are
+	// returning true to avoid
+	// further backtracking
+	if (row == N - 1 && col == N)
+		return 1;
+
+	// Check if column value becomes 9 ,
+	// we move to next row and
+	// column start from 0
+	if (col == N)
+	{
+		row++;
+		col = 0;
+	}
+
+	// Check if the current position
+	// of the grid already contains
+	// value >0, we iterate for next column
+	if (grid[row][col] > 0)
+		return teilSudokus(grid, row, col + 1, maxStellen, stelle);
+
+	for (int num = 1; num <= N; num++)
+	{
+
+		// Check if it is safe to place
+		// the num (1-9) in the
+		// given row ,col ->we move to next column
+		if (isSafe(grid, row, col, num) == 1)
+		{
+			grid[row][col] = num;
+			if (stelle == maxStellen) {
+				printf("\n");
+				print(grid);
+			}
+
+
+			//Prüfen für das vorzeitiges Abbrechen
+			if (stelle < maxStellen) {
+				// Checking for next possibility with next
+				// column
+				if (teilSudokus(grid, row, col + 1, maxStellen, stelle + 1) == 1)
+					return 1;
+			}
+
+
+		}
+		// Removing the assigned num ,
+		// since our assumption
+		// was wrong , and we go for next
+		// assumption with
+		// diff num value
+		grid[row][col] = 0;
+
+	}
+
+	return 0;
+}
+
 int main()
 {
 	// 0 means unassigned cells
@@ -125,11 +202,14 @@ int main()
 				   { 0, 0, 0, 0, 0, 0, 0, 7, 4 },
 				   { 0, 0, 5, 2, 0, 6, 3, 0, 0 } };
 
-	if (solveSudoku(grid, 0, 0) == 1)
-		print(grid);
-	else
-		printf("No solution exists");
+	//if (solveSudoku(grid, 0, 0) == 1)
+	//	print(grid);
+	//else
+	//	printf("No solution exists");
 
-	return 0;
+	//return 0;
+
+	teilSudokus(grid, 0, 0, 4, 1);
+
 	// This is code is contributed by Pradeep Mondal P
 }
