@@ -6,13 +6,14 @@ Original authors:
 (sorted by lastname)
 	Daitche Konstantin
 	Jurczenko Kamil
-	Kose Martin
-	Neufeld Florian
+
+	Parallelisierung Strategie 1
 
 *********************************************************************/
 
 #include <stdio.h>
 #include <mpi.h>
+#include "sudoku_seriell.c"
 
 int main(int argc, char** argv) {
 	int process_count;

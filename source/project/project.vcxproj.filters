@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="source.c">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
     <ClCompile Include="sudoku_seriell.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
