@@ -148,7 +148,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source.c" />
     <ClCompile Include="sudoku_seriell.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="sudoku_seriell.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

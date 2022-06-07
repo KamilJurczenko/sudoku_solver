@@ -18,5 +18,13 @@
     <ClCompile Include="sudoku_seriell.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="source.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="sudoku_seriell.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
