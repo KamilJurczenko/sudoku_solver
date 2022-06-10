@@ -43,7 +43,7 @@ grids* create_grid(struct grid newGrid, int start) {
 
 void insert_end(grids* gridList, struct grid grid)
 {
-    grids *ptr;
+	grids* ptr;
 	ptr = gridList;
 	if (ptr->start != 1)
 	{
@@ -116,9 +116,9 @@ int isSafe(struct grid g, int row,
 to assign values to all unassigned locations in
 such a way to meet the requirements for
 Sudoku solution (non-duplication across rows,
-columns, and boxes) 
+columns, and boxes)
 Return 1 when Solution exist, 0 when no Solution*/
-int solveSudoku(struct grid grid, int row, int col, grids *gridList, int *gridCount)
+int solveSudoku(struct grid* grid, int row, int col, grids* gridList, int* gridCount)
 {
 	// Check if we have reached the 8th row
 	// and 9th column (0
@@ -140,7 +140,7 @@ int solveSudoku(struct grid grid, int row, int col, grids *gridList, int *gridCo
 	// Check if the current position
 	// of the grid already contains
 	// value >0, we iterate for next column
-	if (grid.sudoku[row][col] > 0)
+	if (grid->sudoku[row][col] > 0)
 		return solveSudoku(grid, row, col + 1, gridList, gridCount);
 
 	for (int num = 1; num <= N; num++)
@@ -148,7 +148,7 @@ int solveSudoku(struct grid grid, int row, int col, grids *gridList, int *gridCo
 		// Check if it is safe to place
 		// the num (1-9) in the
 		// given row ,col ->we move to next column
-		if (isSafe(grid, row, col, num) == 1)
+		if (isSafe(*grid, row, col, num) == 1)
 		{
 			/* assigning the num in the
 			current (row,col)
@@ -156,13 +156,13 @@ int solveSudoku(struct grid grid, int row, int col, grids *gridList, int *gridCo
 			and assuming our assigned num
 			in the position
 			is correct	 */
-			grid.sudoku[row][col] = num;
+			grid->sudoku[row][col] = num;
 
 			// Cache grid if starting Grid needed and return to deny backtracking
 			if (gridList != NULL && &gridCount != NULL)
 			{
 				// Add grid to list
-				insert_end(gridList, grid);
+				insert_end(gridList, *grid);
 				// Set Counter
 				*gridCount += 1;
 				continue;
@@ -179,7 +179,7 @@ int solveSudoku(struct grid grid, int row, int col, grids *gridList, int *gridCo
 		// was wrong , and we go for next
 		// assumption with
 		// diff num value
-		grid.sudoku[row][col] = 0;
+		grid->sudoku[row][col] = 0;
 	}
 	return 0;
 }
@@ -209,12 +209,12 @@ void printPartSudokus(grids* su)
 
 // ToDo fehlerzüstände abfangen wenn zu viele Prozesse für das Sudokufeld gewählt wurden
 // Eventuell Stack besser als ne linked List -> schneller
-grids* initParallel(int processCount, int* listCount)
+grids* initParallel(int processCount)
 {
 	int g[N][N] = { { 3, 0, 6, 5, 0, 8, 4, 0, 0 },
 					{ 5, 2, 0, 0, 0, 0, 0, 0, 0 },
 					{ 0, 8, 7, 0, 0, 0, 0, 3, 1 },
-				    { 0, 0, 3, 0, 1, 0, 0, 8, 0 },
+					{ 0, 0, 3, 0, 1, 0, 0, 8, 0 },
 					{ 9, 0, 0, 8, 6, 3, 0, 0, 5 },
 					{ 0, 5, 0, 0, 9, 0, 6, 0, 0 },
 					{ 1, 3, 0, 0, 0, 0, 2, 5, 0 },
@@ -225,16 +225,17 @@ grids* initParallel(int processCount, int* listCount)
 
 	memcpy(rootGrid.sudoku, g, sizeof(g));
 
+	printf("Starting Sudoku: \n");
 	printBoard(&rootGrid);
 
 	// init Grid List with starting Sudoku Grid
 	grids* gridList = create_grid(rootGrid, 0);
-	*listCount = 1;
+	int listCount = 1;
 
 	int currentDepth = -1; // counter val for current depth of breadth search
 
 	// breadth search till breadth = num or breadth < num
-	while (*listCount < processCount)
+	while (listCount < processCount)
 	{
 		// tmp variables for one breadth graph iteration in a depth
 		int tmpListCount = 0;
@@ -243,7 +244,7 @@ grids* initParallel(int processCount, int* listCount)
 		// Iterate one graph depth
 		while (currentGrid != NULL)
 		{
-			solveSudoku(currentGrid->grid, 0, 0, tmpGridList, &tmpListCount);
+			solveSudoku(&currentGrid->grid, 0, 0, tmpGridList, &tmpListCount);
 			currentGrid = currentGrid->next;
 		}
 
@@ -252,7 +253,7 @@ grids* initParallel(int processCount, int* listCount)
 
 		delete_grids(gridList);
 		gridList = tmpGridList;
-		*listCount = tmpListCount;
+		listCount = tmpListCount;
 		currentDepth++;
 		if (currentDepth == 500) break; // for debugging
 	}
@@ -266,9 +267,9 @@ grids* initParallel(int processCount, int* listCount)
 		free(ptr);
 	}*/
 	// Print found starting Sudokus and further information			
-	printf("Found %d Sudokus to parallelize", *listCount);
+	printf("Found %d Sudokus to parallelize", listCount);
 	printf("\n");
-	printPartSudokus(gridList);
+	//printPartSudokus(gridList); // for debugging
 	return gridList;
 
 	// free memory
@@ -281,19 +282,19 @@ int main()
 	struct grid startingSudoku;
 	int g[N][N] = {{ 3, 0, 6, 5, 0, 8, 4, 0, 0 },
 				   { 5, 2, 0, 0, 0, 0, 0, 0, 0 },
-			       { 0, 8, 7, 0, 0, 0, 0, 3, 1 },
-			       { 0, 0, 3, 0, 1, 0, 0, 8, 0 },
-			       { 9, 0, 0, 8, 6, 3, 0, 0, 5 },
-			       { 0, 5, 0, 0, 9, 0, 6, 0, 0 },
-			       { 1, 3, 0, 0, 0, 0, 2, 5, 0 },
-			       { 0, 0, 0, 0, 0, 0, 0, 7, 4 },
-			       { 0, 0, 5, 2, 0, 6, 3, 0, 0 } };
+				   { 0, 8, 7, 0, 0, 0, 0, 3, 1 },
+				   { 0, 0, 3, 0, 1, 0, 0, 8, 0 },
+				   { 9, 0, 0, 8, 6, 3, 0, 0, 5 },
+				   { 0, 5, 0, 0, 9, 0, 6, 0, 0 },
+				   { 1, 3, 0, 0, 0, 0, 2, 5, 0 },
+				   { 0, 0, 0, 0, 0, 0, 0, 7, 4 },
+				   { 0, 0, 5, 2, 0, 6, 3, 0, 0 } };
 	initParallel(g);
-	
+
 	memcpy(startingSudoku.sudoku, g, sizeof(g));
 
 	//printBoard(&startingSudoku);
-		
+
 	int s;
 	grids *p = getStartSudokus(startingSudoku,83, &s);
 
@@ -306,7 +307,7 @@ int main()
 	}
 	// free memory
 	delete_grids(p);
-	
+
 
 
 

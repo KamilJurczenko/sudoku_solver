@@ -17,8 +17,8 @@ void delete_grids(grids* oldGrids);
 
 void printBoard(struct grid* grid);
 
-grids* initParallel(int processCount, int* listCount);
+grids* initParallel(int processCount);
 
-int solveSudoku(struct grid grid, int row, int col, grids* gridList, int* gridCount);
+int solveSudoku(struct grid* grid, int row, int col, grids* gridList, int* gridCount);
 
 #endif
