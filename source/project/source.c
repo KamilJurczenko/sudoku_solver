@@ -132,15 +132,11 @@ int main(int argc, char** argv) {
 			}
 		} while (sudokusAvailable == 1);
 	}
+	else if (rank == 0 && process_count == 1) {
+		lookForSolution(ptr->grid, rank);
+	}
 	else if (rank == 0)
 	{
-		// Nehme selber ein Sudoku -> nicht effizient!
-		/*if (ptr != NULL)
-		{
-			lookForSolution(ptr->grid, rank);
-			ptr = ptr->next;
-		}
-		else printf("ERROR: No Sudokus left!\n");*/
 		MPI_Status* sendStatuses = (MPI_Status*)malloc((process_count - 1) * sizeof(MPI_Status));
 		MPI_Waitall(process_count - 1, sendRequests, sendStatuses);
 		//MPI_Request* sendRequestsNew = (MPI_Request*)malloc((process_count - 1) * sizeof(MPI_Request));
