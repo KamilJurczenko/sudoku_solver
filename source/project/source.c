@@ -22,7 +22,6 @@ void lookForSolution(struct grid grid, int rank)
 	if (solutionFound == 1)
 	{
 		printf("Solution found on pid %d \n", rank);
-		printf("Solution Sudoku: \n");
 		// Lösung ausgeben
 		printBoard(&grid);
 
@@ -91,8 +90,8 @@ int main(int argc, char** argv) {
 		sudokuList = initParallel(process_count);
 	    gridSize = sudokuList->grid.size;
 
-		int* data;
-		data = (int*)malloc((process_count - 1) * sizeof(int));
+		//int* data;
+		//data = (int*)malloc((process_count - 1) * sizeof(int));
 	    recvRequests = (MPI_Request*)malloc((process_count - 1) * sizeof(MPI_Request));
 		sendRequests = (MPI_Request*)malloc((process_count - 1) * sizeof(MPI_Request));
 		ptr = sudokuList;
@@ -105,11 +104,11 @@ int main(int argc, char** argv) {
 			MPI_Isend(ptr->grid.sudoku, gridSize * gridSize, MPI_INT, i, 8, MPI_COMM_WORLD, &sendRequests[i - 1]);
 			//MPI_Isend(ptr->grid.size, );
 			// Antwort wenn prozess fertig
-			MPI_Irecv(&data[i - 1], 1, MPI_INT, i, 2, MPI_COMM_WORLD, &recvRequests[i - 1]);
+			//MPI_Irecv(&data[i - 1], 1, MPI_INT, i, 2, MPI_COMM_WORLD, &recvRequests[i - 1]);
 			ptr = ptr->next;
 		}
 		// 60% COMPUTING TIME END
-		free(data);
+		//free(data);
 	}
 	
 	// Broadcast grid size
@@ -128,20 +127,20 @@ int main(int argc, char** argv) {
 			MPI_Recv(&sudokusAvailable, 1, MPI_INT, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 			if (sudokusAvailable == 1)
 			{
-				printf("New Sudokus Available! Get one...\n");
+				//printf("New Sudokus Available! Get one...\n");
 				recvAndCalc(gridSize, rank);
 			}
 		} while (sudokusAvailable == 1);
 	}
 	else if (rank == 0)
 	{
-		// Nehme selber ein Sudoku 
-		if (ptr != NULL)
+		// Nehme selber ein Sudoku -> nicht effizient!
+		/*if (ptr != NULL)
 		{
 			lookForSolution(ptr->grid, rank);
 			ptr = ptr->next;
 		}
-		else printf("ERROR: No Sudokus left!\n");
+		else printf("ERROR: No Sudokus left!\n");*/
 		MPI_Status* sendStatuses = (MPI_Status*)malloc((process_count - 1) * sizeof(MPI_Status));
 		MPI_Waitall(process_count - 1, sendRequests, sendStatuses);
 		//MPI_Request* sendRequestsNew = (MPI_Request*)malloc((process_count - 1) * sizeof(MPI_Request));
@@ -152,9 +151,11 @@ int main(int argc, char** argv) {
 			MPI_Status status;
 			int index;
 			int reply = 1;
+			int message;
 			// Warte auf ein fertigen Prozess
 			//printf("Waiting for one process to give new task...\n");
-			MPI_Waitany(process_count - 1, recvRequests, &index, &status);
+			MPI_Recv(&message, 1, MPI_INT, MPI_ANY_SOURCE, 2, MPI_COMM_WORLD, &status);
+			//MPI_Waitany(process_count - 1, recvRequests, &index, &status);
 			MPI_Send(&reply, 1, MPI_INT, status.MPI_SOURCE, 1, MPI_COMM_WORLD);
 			MPI_Send(ptr->grid.sudoku, gridSize * gridSize, MPI_INT, status.MPI_SOURCE, 8, MPI_COMM_WORLD);
 			//MPI_Isend(1, 1, MPI_INT, status.MPI_SOURCE, 1, MPI_COMM_WORLD, &replyReq[status.MPI_SOURCE]);
@@ -165,12 +166,15 @@ int main(int argc, char** argv) {
 		if (process_count > 1)
 		{
 			// Auf Antwort restlicher Prozesse warten und mitteilen dass keine Sudokus übrig
-			MPI_Status* statuses = (MPI_Status*)malloc((process_count - 1) * sizeof(MPI_Status));
-			MPI_Waitall(process_count - 1, recvRequests, statuses);
+			//MPI_Status* statuses = (MPI_Status*)malloc((process_count - 1) * sizeof(MPI_Status));
+			//MPI_Waitall(process_count - 1, recvRequests, statuses);
 			for (int i = 1; i < process_count; i++)
 			{
 				//MPI_Request request;
+				MPI_Status status;
+				int message;
 				int reply = 0;
+				MPI_Recv(&message, 1, MPI_INT, MPI_ANY_SOURCE, 2, MPI_COMM_WORLD, &status);
 				MPI_Send(&reply, 1, MPI_INT, i, 1, MPI_COMM_WORLD);
 				//MPI_Isend(&buf, 1, MPI_INT, i, 1, MPI_COMM_WORLD, &request);
 				//MPI_Request_free(&request);

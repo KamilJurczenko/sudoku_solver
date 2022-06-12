@@ -219,11 +219,12 @@ struct grid readGridFromFile(char* fileName)
 	arr = NULL;
 	struct grid grid;
 	//int arr[GRID_SIZE][GRID_SIZE]; static 1MB on stack!
-	char line[512]; // long enough to pickup one line in the input/text file
+	int lineLen = 2048;
+	char line[2048]; // long enough to pickup one line in the input/text file
 	if (myFile) {
 		int sizeSet = 0;
 		//arr = (int*)malloc(sizeof(int) *pow(*gridSize,2));
-		while (fgets(line, 512, myFile)) {
+		while (fgets(line, 2048, myFile)) {
 			col = 0;        
 			n = 0;          // will help in converting digits into decimal number
 			/*if (row == 24) {
@@ -267,12 +268,12 @@ grids* initParallel(int processCount)
 	struct grid rootGrid;
 
 	int gridSize;
-	//sudokuNormal9 , sudokuHard16, sudokuExtreme25
-	rootGrid = readGridFromFile("..\\..\\project\\sudokus\\sudokuHard16.txt",&gridSize); // fürs exec
-	//rootGrid = readGridFromFile("./sudokus/sudokuHard16.txt", &gridSize); // fürs debuggen
+	//sudokuNormal9 , sudokuNormal16, sudokuHard16, sudokuExtreme25, sudoku100 
+	rootGrid = readGridFromFile("..\\..\\project\\sudokus\\sudokuNormal16.txt",&gridSize); // fürs exec
+	//rootGrid = readGridFromFile("./sudokus/sudoku100.txt", &gridSize); // fürs debuggen
 
-	printf("Starting Sudoku: \n");
-	printBoard(&rootGrid);
+	//printf("Starting Sudoku: \n");
+	//printBoard(&rootGrid);
 
 	// init Grid List with starting Sudoku Grid
 	grids* gridList = create_grid(rootGrid, 0);
@@ -313,7 +314,6 @@ grids* initParallel(int processCount)
 	// free memory
 	//delete_grids(p);
 }
-
 /*
 int main()
 {
