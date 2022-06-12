@@ -1,10 +1,11 @@
 #ifndef SUDOKU_SERIELL
 #define SUDOKU_SERIELL
 // N is the size of the 2D matrix N*N
-#define N 9
+//#define GRID_SIZE 16
 
 struct grid {
-	int sudoku[N][N];
+	int* sudoku;
+	int size;
 };
 
 typedef struct s_grids {
