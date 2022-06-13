@@ -269,7 +269,7 @@ grids* initParallel(int processCount)
 
 	int gridSize;
 	//sudokuNormal9 , sudokuNormal16, sudokuHard16, sudokuExtreme25, sudoku100 
-	rootGrid = readGridFromFile("..\\..\\project\\sudokus\\sudokuNormal16.txt",&gridSize); // fürs exec
+	rootGrid = readGridFromFile("..\\..\\project\\sudokus\\sudokuNormal9.txt",&gridSize); // fürs exec
 	//rootGrid = readGridFromFile("./sudokus/sudoku100.txt", &gridSize); // fürs debuggen
 
 	//printf("Starting Sudoku: \n");
