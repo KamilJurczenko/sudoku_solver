@@ -24,15 +24,25 @@ Dokumentation:
 		
 		Man Stelle sich eine Sudoku und alle möglichen Einträge in Felder als einen Graphen vor, wobei ein Knoten ein Sudoku ist. 
 		Ein	Kinderknoten ist ein weiteres Sudoku welches ein weiteres, nach den Sudoku Regel entsprechend, gefülltes Feld vom Elternknoten besitzt.
-		(1) Bildung von Startsudokus für je ein Prozess 
-				- Der serielle Code wurde dafür modifiziert
-					- Vor der eigentlichen Parallelisierung muss die Methode initParallel(int processCount) im seriellen Code aufgerufen werden.
-						- initParallel erstellt Sudokus indem eine Breitensuche ausgehend vom gegebenen Sudoku durchgeführt wird.
-							- Dafür wurde der gegebene Backtracking Algorithmus ausgenutzt, der sich das nächste Sudoku merkt und in eine Liste abspeichert
-								- Es werden solange Sudokus gesucht bis die Anzahl der Sudokus in einer Tiefe/Ebene im Graphen mindestens gleich der Prozessmenge ist und die Liste wird ausgegeben.
-				- Prozess 1 erstellt die Sudokus, während alle restlichen Prozesse warten. Nach der Erstellung gibt Prozess 1 jedem verfügbaren Prozess ein Sudoku, mit dem dann eine Lösung gesucht wird.
-				  Findet ein Prozess keine Lösung dann sendet dieser eine Nachricht an Prozess 1 und fragt nach einem neuen Sudoku, falls vorhanden.
-				  Durchgang wird solange wiederholt bis es keine Sudokus mehr von Prozess 1 zum lösen gibt, oder irgendwo schon eine Lösung gefunden wurde.
+		
+[Serieller Code]		(1) Bildung von Startsudokus für je ein Prozess 
+						- Der serielle Code wurde dafür modifiziert
+							- Vor der eigentlichen Parallelisierung muss die Methode initParallel(int processCount) im seriellen Code aufgerufen werden.
+								- initParallel erstellt Sudokus indem eine Breitensuche ausgehend vom gegebenen Sudoku durchgeführt wird.
+									- Dafür wurde der gegebene Backtracking Algorithmus ausgenutzt, der sich das nächste Sudoku merkt und in eine Liste abspeichert
+										- Es werden solange Sudokus gesucht bis die Anzahl der Sudokus in einer Tiefe/Ebene im Graphen mindestens gleich der Prozessmenge ist und die Liste wird ausgegeben.
+								
+[Parallelisierungsvarianten]	Es wurden zwei Varianten zu der Parallelisierung geschrieben:
+								(1) Variante 1
+									- Prozess 1 erstellt die Sudokus, während alle restlichen Prozesse warten. Nach der Erstellung gibt Prozess 1 jedem verfügbaren Prozess ein Sudoku, mit dem dann eine Lösung gesucht wird.
+									  Findet ein Prozess keine Lösung dann sendet dieser eine Nachricht an Prozess 1 und fragt nach einem neuen Sudoku, falls vorhanden.
+									  Durchgang wird solange wiederholt bis es keine Sudokus mehr von Prozess 1 zum lösen gibt, oder irgendwo schon eine Lösung gefunden wurde.
+								(2) Variante 2
+									- Jeder Prozess e
+							
+
+
+				
 			Mögliche Probleme: 
 				- Es werden eine maximale Anzahl von Prozessen benötigt, weil beispielsweise in einem Sudoku nur maximal 50 Knoten in einer Tiefe im Graphen vorkommen können.
 			Probleme:
