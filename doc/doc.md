@@ -38,10 +38,9 @@ Dokumentation:
 									  Findet ein Prozess keine Lösung dann sendet dieser eine Nachricht an Prozess 1 und fragt nach einem neuen Sudoku, falls vorhanden.
 									  Durchgang wird solange wiederholt bis es keine Sudokus mehr von Prozess 1 zum lösen gibt, oder irgendwo schon eine Lösung gefunden wurde.
 								(2) Variante 2
-									- Jeder Prozess e
-							
-
-
+									- Jeder Prozess ruft initParallel und es entstehen Redundanzen. 
+									  Es kann jedoch jeder Prozess ein Sudoku abbarbeiten, wohingegen Variante 1 ein Prozess nie Sudokus abbarbeiten wird.
+									  
 				
 			Mögliche Probleme: 
 				- Es werden eine maximale Anzahl von Prozessen benötigt, weil beispielsweise in einem Sudoku nur maximal 50 Knoten in einer Tiefe im Graphen vorkommen können.
