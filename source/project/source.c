@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
 	{
 		//int debugProcessNumbers = 2;
 		// Seriell Anfangsudokus per Breitensuche suchen und abspeichern, um später damit zu parallelisieren
-		sudokuList = initParallel(process_count);
+		sudokuList = initParallel(process_count - 1);
 	    gridSize = sudokuList->grid.size;
 
 		//int* data;
