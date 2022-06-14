@@ -37,9 +37,10 @@ int main(int argc, char** argv) {
 
 	double start_time;
 	double end_time;
+	double duration;
 	double start_time_teilsudokus;
 	double end_time_teilsudokus;
-	double duration;
+	double duration_teilsudokus;
 
 	int possibleSolutionsCount;
 
@@ -57,33 +58,31 @@ int main(int argc, char** argv) {
 	// Seriell Anfangsudokus per Breitensuche abspeichern, um später damit zu parallelisieren
 	//grids* sudokuList = initParallel(teilsudokus, &possibleSolutionsCount);
 	grids* sudokuList = initParallel(process_count, &possibleSolutionsCount);
-	//printPartSudokus(sudokuList);
+
 	end_time_teilsudokus = MPI_Wtime();
 
 	if (rank == 0) {
-		duration = end_time_teilsudokus - start_time_teilsudokus;
 
+		duration_teilsudokus = end_time_teilsudokus - start_time_teilsudokus;
 	}
 	//printf("teilsodukos %d", possibleSolutionsCount);
 
 	if (process_count == 0)
 		return 0;
 
-	// Weise jedem prozess ein Startsudoku zu
 	int solutionFound = 0;
 	int xrank = rank;
-	int count = 60;
-	int rcount = 0;
 
 
 
 
+	// Alle Teilsudokus werden durchlaufen
 	for (int i = 0; i < possibleSolutionsCount; i++) {
 		//printf("Solution ...#procs %d, pid %d\n", process_count, rank);
 
 
 
-
+		//abhänging vom rank werden die Teilsudokus abgearbeitet
 		if (xrank == i) {
 			//printf("Solution xrank == %i ...\n", i);
 			xrank += process_count;
@@ -102,6 +101,8 @@ int main(int argc, char** argv) {
 				}
 				;
 			}
+
+			//Schickt die Lösungsdauer ab
 			if (process_count > 1 & rank != 0) {
 				double end_time2 = MPI_Wtime();
 				duration = end_time2 - start_time;
@@ -143,6 +144,7 @@ int main(int argc, char** argv) {
 
 
 	double solutionTime = 0;
+	//rank 0 prozess wartet auf die Lösungszeit, falls dieser die Lösung nicht gefunden hat
 	if (rank == 0 & process_count > 1 & solutionFound != 1) {
 		//MPI_Recv(&solution, N* N, MPI_INT, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 		MPI_Recv(&solutionTime, 1, MPI_DOUBLE, MPI_ANY_SOURCE, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
@@ -152,7 +154,8 @@ int main(int argc, char** argv) {
 		double end_time2 = MPI_Wtime();
 		solutionTime = end_time2 - start_time;
 	}
-	//printf("#procs %d, pid %d ->reduce\n", process_count, rank);
+
+	//Lösung wird gesammelt und auf alle Prozesse gewartet
 	MPI_Reduce(&recGrid, &solution, N * N, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 	end_time = MPI_Wtime();
 
