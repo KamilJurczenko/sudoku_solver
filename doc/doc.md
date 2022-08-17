@@ -32,7 +32,7 @@ Dokumentation:
 									- Dafür wurde der gegebene Backtracking Algorithmus ausgenutzt, der sich das nächste Sudoku merkt und in eine Liste abspeichert
 										- Es werden solange Sudokus gesucht bis die Anzahl der Sudokus in einer Tiefe/Ebene im Graphen mindestens gleich der Prozessmenge ist und die Liste wird ausgegeben.
 								
-[Parallelisierungsvarianten]	Es wurden zwei Varianten zu der Parallelisierung geschrieben:
+[Parallelisierungsvarianten]	Es wurden zwei Varianten zu der Parallelisierung angewendet:
 								(1) Variante 1
 									- Prozess 1 erstellt die Sudokus, während alle restlichen Prozesse warten. Nach der Erstellung gibt Prozess 1 jedem verfügbaren Prozess ein Sudoku, mit dem dann eine Lösung gesucht wird.
 									  Findet ein Prozess keine Lösung dann sendet dieser eine Nachricht an Prozess 1 und fragt nach einem neuen Sudoku, falls vorhanden.
@@ -43,12 +43,11 @@ Dokumentation:
 									  
 				
 			Mögliche Probleme: 
-				- Es werden eine maximale Anzahl von Prozessen benötigt, weil beispielsweise in einem Sudoku nur maximal 50 Knoten in einer Tiefe im Graphen vorkommen können.
+				- Es werden eine begrenzte Anzahl von Prozessen benötigt, weil, vor allem in weniger komplexen Sudokus, beispielsweise nur maximal 50 Knoten in einer Tiefe im Graphen vorkommen können und die komplette Leistung des Clusters nicht ausgenutzt werden kann.
 			Probleme:
 				- Der Speicher wird bei sehr großen Sudokus und sehr vielen Prozessen sehr groß (100x100x4Bytes bei int sind 40 MB, bei 1000 Sudokus sind das 40GB benötigter Speicher)
 			
-			Optimierungen:
-				- Frühzeitiges Abbrechen bei Lösung
+			
 		
 		
 

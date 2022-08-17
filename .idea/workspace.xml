@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c4713695-f8c5-4342-bddc-23f205b32ba0" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/source/project/sudoku_seriell.c" beforeDir="false" afterPath="$PROJECT_DIR$/source/project/sudoku_seriell.c" afterDir="false" />
-    </list>
+    <list default="true" id="c4713695-f8c5-4342-bddc-23f205b32ba0" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -25,6 +23,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="RunOnceActivity.cidr.known.project.marker" value="true" />
     <property name="cidr.known.project.marker" value="true" />
+    <property name="last_opened_file_path" value="$USER_HOME$/AndroidStudioProjects/VokabelQuizApp" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
