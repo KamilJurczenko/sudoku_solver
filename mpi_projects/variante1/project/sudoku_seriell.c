@@ -268,21 +268,22 @@ grids* initParallel(int processCount, int* sudokusCount, char* sudokuFile)
 	struct grid rootGrid;
 
 	int gridSize;
-	char buildPath[] = "..\\..\\..\\sudokus\\"; // TODO use as argument?
+	/*
+	char buildPath[] = "..\\..\\..\\..\\sudokus\\"; // TODO use as argument?
 	char debugPath[] = "..\\..\\sudokus\\";
 	char fromScript[] = "..\\sudokus\\";
-	char* sudokuPath = fromScript; // Change here
+	char* sudokuPath = buildPath; // Change here
 	char* path = malloc(strlen(sudokuPath) + strlen(sudokuFile) + 1);
 	strcpy(path, sudokuPath);
 	strcat(path, sudokuFile);
-
+	*/
 	char cwd[512];
 	if (getcwd(cwd, sizeof(cwd)) != NULL) {
 		D(printf("Current working dir: %s\n", cwd));
 	}
 	//sudokuNormal9 , sudokuNormal16, sudokuHard16, sudokuExtreme25, sudoku100 
 	//rootGrid = readGridFromFile(strcat(buildPath, file), &gridSize); // fürs exec
-	rootGrid = readGridFromFile(path, &gridSize); // fürs debuggen
+	rootGrid = readGridFromFile(sudokuFile, &gridSize); // fürs debuggen
 
 	//printf("Starting Sudoku: \n");
 	//printBoard(&rootGrid);
@@ -319,6 +320,7 @@ grids* initParallel(int processCount, int* sudokusCount, char* sudokuFile)
 	}
 	// Print found starting Sudokus and further information			
 	D(printf("Found %d Sudokus to parallelize\n", *sudokusCount));
+	printf("%d\n", *sudokusCount);
 	//printPartSudokus(gridList); // for debugging
 	return gridList;
 }

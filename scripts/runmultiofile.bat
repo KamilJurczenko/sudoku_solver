@@ -5,17 +5,14 @@ set sufile=%2
 set /A numexe=%3
 SET /A startproc=%4
 set /A maxproc=%5
-
-set exeFile=none
-
+set sufilePath=..\sudokus\%sufile%
 if "%runexe%"=="omp" (
-	set exeFile=..\omp_projects\x64\Debug\omp.exe
+	set program='..\omp_projects\x64\Debug\omp.exe %%k %sufilePath%'
 )
-if "%runexe%"=="mpi1" (
-	set exeFile=..\mpi_projects\variante1\x64\Debug\project.exe
-)
-if "%runexe%"=="mpi2" (
-	set exeFile=..\mpi_projects\variante1\x64\Debug\project.exe
+setlocal EnableDelayedExpansion
+if "%runexe%"=="mpi" (
+	set mpi="C:\Program Files\Microsoft MPI\Bin\mpiexec.exe" -n %%k
+	set program='!mpi! ..\mpi_projects\variante1\x64\Debug\project.exe %sufilePath%'
 )
 
 set rawDataPath=..\rawdata
@@ -29,12 +26,16 @@ set Timestamp=%DATE:~0,2%%DATE:~3,2%%DATE:~6,8%%hh%%time:~3,2%%time:~6,2%
 set path=%rawDataPath%\%runexe%\
 mkdir %path%
 set csvPath=%path%%sufile:.txt=%_%Timestamp%.csv
-echo "processes";"computing time [s]">> %csvPath%
+echo "processes";"num_sudokus";"computing time [s]";"solution time [s]";"sudoku_init time [s]">> %csvPath%
+setlocal EnableDelayedExpansion
 for /L %%k in (%startproc%,1,%maxproc%) do (
 	for /L %%i in (1,1,%numexe%) do (
-		for /f %%j in ('%exeFile% %%k %sufile%') do (
-				call echo %%k;%%j>> %csvPath%
+		set linecount=0
+		for /f "delims=" %%j in (%program%) do (
+				set linecontent[!linecount!]=%%j
+				set /a linecount+=1
 )
+		call echo %%k;!linecontent[0]!;!linecontent[1]!;!linecontent[2]!;!linecontent[3]!>> %csvPath%
 )
 )
 

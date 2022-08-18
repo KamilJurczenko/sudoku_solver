@@ -8,38 +8,38 @@ Sprecher:
 
 
 Dokumentation:
-	Ein Sudokufeld wird mithilfe des Backtracking Algorithmus (äquivalent zu einer Tiefensuche eines Graphens) gelöst. Hierfür wird sudoku_seriell.c von "Pradeep Mondal P" verwendet [2], wobei ein Sudokufeld als nxn Matrix betrachtet wird.
+	Ein Sudokufeld wird mithilfe des Backtracking Algorithmus (äquivalent zu einer Tiefensuche eines Graphens) gelöst. Hierfür wird sudoku_seriell.c von "Pradeep Mondal P" verwendet [2], wobei ein Sudokufeld als nxn Matrix betrachtet wird (n ist die Größe des Sudokus).
 	Der Algorithmus verläuft folglich als Pseudocode:
 	
 	(1) solveSudoku aufrufen
-		(2) Abbruchbedingung: 1 Ausgeben falls im letzten Feld 
-		(3) Gehe Feld weiter, falls Feld keine Null (Nur im ersten solveSudoku Aufruf relevant)
-		(4) Iteriere durch i <= n (n:=Breite/Höhe des Sudokufeldes) und prüfe ob i in Feld passt (legal nach Sudokuregel ist)
-			(4.1) Wenn legal gebe 1 aus und gehe ein Feld weiter und führe (1) rekursiv aus
-			(4.2) Gebe 0 aus falls keine Lösung gefunden und gehe zurück zu (4) und probiere eine höhere Zahl
+		(2) Abbruchbedingung: 1 Ausgeben falls im letzten Feld (von links nach rechts und oben nach unten)
+		(3) Iteriere solange durch das Sudokufeld bis ein leeres Feld gefunden wurde (ein Feld = 0 ist)
+		(4) Iteriere solange durch i <= n bis i in das Feld passt (legal nach Sudokuregeln ist)
+			(4.1) Wenn eine Zahl gefunden wurde die reinpasst dann gebe 1 aus und gehe ein Feld weiter und führe (1) rekursiv aus
+			(4.2) Gebe 0 aus falls keine Lösung gefunden und gehe zurück zu (4) und probiere die nächsthöhere Zahl aus (Backtracking)
 	
 	Dieser Algorithmus hat im schlimmsten Fall eine exponentielle Laufzeit von z^N und ist dementsprechend sehr Aufwendig.
 	Dieses Problem lässt sich unter Umständen parallelisieren. Da der Algorithmus rekursiv verläuft, wird eine Parallelisierung der Lösungsfindung problematisch, weshalb alternative Lösungen gefunden werden müssen.
 	Es wurde folgende Strategie entwickelt:
 		
-		Man Stelle sich eine Sudoku und alle möglichen Einträge in Felder als einen Graphen vor, wobei ein Knoten ein Sudoku ist. 
-		Ein	Kinderknoten ist ein weiteres Sudoku welches ein weiteres, nach den Sudoku Regel entsprechend, gefülltes Feld vom Elternknoten besitzt.
+		Man Stelle sich eine Sudoku und alle möglichen Einträge in den Feldern als einen Graphen vor, wobei ein Knoten ein Sudoku ist. 
+		Die Wurzel ist das Sudoku was gelöst werden soll und die Kinderknoten weitere Sudokus die aus dem Wurzelsudoku stammen und ein gefülltes Feld besitzen.
+	
+	Für die Parallelisierung wurden zum Seriellen Code bestimmte Modifikationen durchgeführt:
 		
-[Serieller Code]		(1) Bildung von Startsudokus für je ein Prozess 
-						- Der serielle Code wurde dafür modifiziert
-							- Vor der eigentlichen Parallelisierung muss die Methode initParallel(int processCount) im seriellen Code aufgerufen werden.
-								- initParallel erstellt Sudokus indem eine Breitensuche ausgehend vom gegebenen Sudoku durchgeführt wird.
-									- Dafür wurde der gegebene Backtracking Algorithmus ausgenutzt, der sich das nächste Sudoku merkt und in eine Liste abspeichert
-										- Es werden solange Sudokus gesucht bis die Anzahl der Sudokus in einer Tiefe/Ebene im Graphen mindestens gleich der Prozessmenge ist und die Liste wird ausgegeben.
+[Serieller Code]		(1) Bildung von Startsudokus, welches ein Prozess abarbeitet 
+								Vor der eigentlichen Parallelisierung muss die Methode initParallel(int processCount) im seriellen Code aufgerufen werden.
+								initParallel erstellt ausgehend vom Wurzelsudoku Sudokus, indem eine Breitensuche durchgeführt wird. Es wird solange eine Breitensuche durchgeführt bis auf einer Tiefe/Ebene im Graphen mindestens so viele 
+								Knoten wie Prozesse sind. Die Sudokus werden in eine Liste abgespeichert.
 								
 [Parallelisierungsvarianten]	Es wurden zwei Varianten zu der Parallelisierung angewendet:
 								(1) Variante 1
 									- Prozess 1 erstellt die Sudokus, während alle restlichen Prozesse warten. Nach der Erstellung gibt Prozess 1 jedem verfügbaren Prozess ein Sudoku, mit dem dann eine Lösung gesucht wird.
 									  Findet ein Prozess keine Lösung dann sendet dieser eine Nachricht an Prozess 1 und fragt nach einem neuen Sudoku, falls vorhanden.
-									  Durchgang wird solange wiederholt bis es keine Sudokus mehr von Prozess 1 zum lösen gibt, oder irgendwo schon eine Lösung gefunden wurde.
+									  Der Ablauf wird solange wiederholt bis keine Sudokus mehr vorhanden sind, oder irgendwo schon eine Lösung gefunden wurde.
 								(2) Variante 2
 									- Jeder Prozess ruft initParallel und es entstehen Redundanzen. 
-									  Es kann jedoch jeder Prozess ein Sudoku abbarbeiten, wohingegen Variante 1 ein Prozess nie Sudokus abbarbeiten wird.
+									  Es kann jedoch jeder Prozess ein Sudoku abbarbeiten, wohingegen bei Variante 1 ein Prozess zum Managment verwendet wird der nie Sudokus abbarbeitet.
 									  
 				
 			Mögliche Probleme: 

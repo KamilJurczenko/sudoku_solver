@@ -5,18 +5,22 @@
 #include <windows.h>
 
 int solution_found = 0;
+double solutionFindTime;
+double start_time;
 
 // sucht eine Lösung für das übergebene Sudoku Feld
 void lookForSolution(grids* sudoku, int rank)
 {
-	if (solution_found)
-		return;
+	/*if (solution_found)
+		return;*/
 
 	if (solveSudoku(&sudoku->grid, 0, 0, NULL, NULL) == 1)
 	{
 		solution_found = 1;
 		D(printf("Solution found on tid %d \n", rank));
 		// Lösung ausgeben
+		double end_time = omp_get_wtime();
+		solutionFindTime = end_time - start_time;
 		D(printBoard(&sudoku->grid));
 		// ToDo OPTIMIERUNG: restlichen Prozesse vorzeitig beenden
 	}
@@ -31,9 +35,9 @@ void lookForSolution(grids* sudoku, int rank)
 int main(int argc, char** argv) {
 	int thread_num;
 
-	double start_time;
 	double end_time;
 	double duration;
+	double initDuration;
 
 	thread_num = atoi(argv[1]);
 	char* file = argv[2];
@@ -56,7 +60,9 @@ int main(int argc, char** argv) {
 		// Erster Thread erstellt Sudokus
 #pragma omp single
 		{
+			double startInit_time = omp_get_wtime();
 			sudokuList = initParallel(thread_num, &sudokuListSize, file); // Jeder Thread wird rechnen!
+		    initDuration = omp_get_wtime() - startInit_time;
 			ptr = sudokuList;
 			//lookForSolution(omp_get_thread_num());
 		}
@@ -87,6 +93,8 @@ int main(int argc, char** argv) {
 	D(printf(" \\\\   //\n"));
 	D(printf("  \\\\_// Duration: %f\n", duration));
 	printf("%f\n", duration);
+	printf("%f\n", solutionFindTime);
+	printf("%f\n", initDuration);
 
 	return 0;
 }

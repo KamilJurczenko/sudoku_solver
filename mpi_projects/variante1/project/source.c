@@ -14,6 +14,9 @@ Original authors:
 #include "sudoku_seriell.h"
 #include <stdlib.h>
 
+double solutionFindTime = 0;
+double start_time;
+
 // sucht eine Lösung für das übergebene Sudoku Feld
 void lookForSolution(struct grid grid, int rank)
 {
@@ -21,16 +24,20 @@ void lookForSolution(struct grid grid, int rank)
 
 	if (solutionFound == 1)
 	{
-		printf("Solution found on pid %d \n", rank);
+		D(printf("Solution found on pid %d \n", rank));
 		// Lösung ausgeben
-		printBoard(&grid);
-
-		// ToDo OPTIMIERUNG: restlichen Prozesse vorzeitig beenden
+		D(printBoard(&grid));
+		double end_time = MPI_Wtime();
+		solutionFindTime = end_time - start_time;
+		if(rank != 0)
+			MPI_Send(&solutionFindTime, 1, MPI_DOUBLE, 0, 3, MPI_COMM_WORLD);
 	}
+	/*
 	else
 	{
 		//printf("process %d has no Solution for its Grid\n", rank);
 	}
+	*/
 }
 
 struct grid recvGrid(int gridSize)
@@ -43,7 +50,6 @@ struct grid recvGrid(int gridSize)
 	struct grid g;
 	g.sudoku = recvGrid;
 	g.size = gridSize;
-	//printf("SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS\n");
 	//printBoard(&g);
 	return g;
 }
@@ -58,17 +64,16 @@ int main(int argc, char** argv) {
 	int process_count;
 	int rank;
 
-	double start_time;
 	double end_time;
 	double duration;
+	double initDuration;
 
 	MPI_Init(&argc, &argv);
 	MPI_Comm_size(MPI_COMM_WORLD, &process_count);
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	char* file = argv[2];
+	char* file = argv[1];
 	char sudokus[] = "sudokuNormal9, sudokuNormal16, sudokuHard16, sudokuExtreme25, sudoku100";
-	D(printf("Available Sudokus: %s\n", sudokus));
-
+	D(printf("Available Sudokus: %s\n", sudokus)); 
 	start_time = MPI_Wtime();
 
 	// CODE START
@@ -91,7 +96,9 @@ int main(int argc, char** argv) {
 	{
 		//int debugProcessNumbers = 2;
 		// Seriell Anfangsudokus per Breitensuche suchen und abspeichern, um später damit zu parallelisieren
+		double startInit_time = MPI_Wtime();
 		sudokuList = initParallel(process_count - 1, &sudokuListSize, file);
+		initDuration = MPI_Wtime() - startInit_time;
 	    gridSize = sudokuList->grid.size;
 
 		//int* data;
@@ -142,7 +149,9 @@ int main(int argc, char** argv) {
 	else if (rank == 0)
 	{
 		MPI_Status* sendStatuses = (MPI_Status*)malloc((process_count - 1) * sizeof(MPI_Status));
+		MPI_Request solutionTimeRequest;
 		MPI_Waitall(process_count - 1, sendRequests, sendStatuses);
+		//MPI_Irecv(&solutionFindTime, 1, MPI_DOUBLE, MPI_ANY_SOURCE, 3, MPI_COMM_WORLD, &solutionTimeRequest);
 		//MPI_Request* sendRequestsNew = (MPI_Request*)malloc((process_count - 1) * sizeof(MPI_Request));
 		//MPI_Request* replyReq = (MPI_Request*)malloc((process_count - 1) * sizeof(MPI_Request));
 		// Sudokus übrig zum abgeben 
@@ -180,24 +189,29 @@ int main(int argc, char** argv) {
 				//MPI_Request_free(&request);
 			}
 			//MPI_Request_free(recvRequests);
+			if(solutionFindTime == 0)
+				MPI_Recv(&solutionFindTime, 1, MPI_DOUBLE, MPI_ANY_SOURCE, 3, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 		}
+		//MPI_Wait(&solutionTimeRequest, MPI_STATUS_IGNORE);
 		free(recvRequests);
 		free(sendStatuses);
 		free(sendRequests);
 		delete_grids(sudokuList);
 
-		printf("No Sudokus left! The End...\n");
+		D(printf("No Sudokus left! The End...\n"));
 	}
 
 	// CODE END
 
-	end_time = MPI_Wtime();
-
 	if (rank == 0) {
+		end_time = MPI_Wtime();
 		duration = end_time - start_time;
-		printf("\\\\     //\n");
-		printf(" \\\\   //\n");
-		printf("  \\\\_// Duration: %f\n", duration);
+		D(printf("\\\\     //\n"));
+		D(printf(" \\\\   //\n"));
+		D(printf("  \\\\_// Duration: %f\n", duration));
+		printf("%f\n", duration);
+		printf("%f\n", solutionFindTime);
+		printf("%f\n", initDuration);
 	}
 
 	MPI_Finalize();
