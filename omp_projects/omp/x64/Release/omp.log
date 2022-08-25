@@ -1,0 +1,14 @@
+﻿  omp.c
+C:\Users\Kamil\Documents\GitHub\HPC_Gruppe1\omp_projects\omp\omp.c(77,26): warning C4133: "=": Inkompatible Typen - von "grids *" zu "grids *"
+  sudoku_seriell.c
+C:\Users\Kamil\Documents\GitHub\HPC_Gruppe1\omp_projects\omp\sudoku_seriell.c(54,19): warning C4133: "=": Inkompatible Typen - von "grids *" zu "grids *"
+C:\Users\Kamil\Documents\GitHub\HPC_Gruppe1\omp_projects\omp\sudoku_seriell.c(56,38): warning C4133: "=": Inkompatible Typen - von "grids *" zu "grids *"
+C:\Users\Kamil\Documents\GitHub\HPC_Gruppe1\omp_projects\omp\sudoku_seriell.c(68,30): warning C4133: "Funktion": Inkompatible Typen - von "grids *" zu "grids *"
+C:\Users\Kamil\Documents\GitHub\HPC_Gruppe1\omp_projects\omp\sudoku_seriell.c(125,14): warning C4133: "=": Inkompatible Typen - von "grids *" zu "grids *"
+C:\Users\Kamil\Documents\GitHub\HPC_Gruppe1\omp_projects\omp\sudoku_seriell.c(286,42): warning C4020: "readGridFromFile": zu viele übergebene Parameter
+C:\Users\Kamil\Documents\GitHub\HPC_Gruppe1\omp_projects\omp\sudoku_seriell.c(309,35): warning C4133: "=": Inkompatible Typen - von "grids *" zu "grids *"
+  Code wird generiert.
+  Previous IPDB not found, fall back to full compilation.
+  All 13 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Codegenerierung ist abgeschlossen.
+  omp.vcxproj -> C:\Users\Kamil\Documents\GitHub\HPC_Gruppe1\omp_projects\x64\Release\omp.exe

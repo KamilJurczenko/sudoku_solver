@@ -41,13 +41,25 @@ Dokumentation:
 									- Jeder Prozess ruft initParallel und es entstehen Redundanzen. 
 									  Es kann jedoch jeder Prozess ein Sudoku abbarbeiten, wohingegen bei Variante 1 ein Prozess zum Managment verwendet wird der nie Sudokus abbarbeitet.
 									  
+			HIER GRAFIK (BAUM/GRAPH)						  
+									  
+			
+			Die Parallelisierung wurde mit MPI und OMP realisiert:
+				Die Zeiten für die Berechnung eines Sudokus sind bei MPI und OMP sehr ähnlich. Es zeigte sich das die Implementation von OMP einfacher ist. OMP wurde mit 100 Zeilen Code realisiert, wohingegen der MPI Code das doppelte mit ca. 200 Zeilen enthält.
+			
+			
+		Mögliche Probleme: 
+			- Es werden eine begrenzte Anzahl von Prozessen benötigt, weil, vor allem in weniger komplexen Sudokus, beispielsweise nur maximal 50 Knoten in einer Tiefe im Graphen vorkommen können und die komplette Leistung des Clusters nicht ausgenutzt werden kann.
+			
+		Probleme:
+			- Der Speicher wird bei sehr großen Sudokus und sehr vielen Prozessen sehr groß (100x100x4Bytes bei int sind 40 MB, bei 1000 Teilsudokus sind das 40GB benötigter Speicher)
+			- (2) Einige Prozesse finden schnell keine Lösung, es sind aber keine Teilsudokus mehr zum Rechnen übrig. Andere Prozesse müssen lange rechnen während manche Prozesse idlen.
+				  Idealerweise hat man bei 2 Prozessen und Cores eine halbierung der Berechnungszeit als bei nur einem Prozess und Core. Die Messungen zeigten aber das man bei einem 16x16 Sudoku mit Normaler Schwierigkeit mit dem Parallelisierungsverfahren bei 16 Prozessen
+				  und Cores nur eine sehr geringe Verbesserung von ca 0.7 Sekunden verglichen mit nur einem Prozess aufweist (siehe rawdata\old data\mpi\sudokuNormal16). 
+		
+		Weitere Forschungen/Verbesserungen:
+			- Um das Problem (2) zu lösen, wurde der Code optimiert.
 				
-			Mögliche Probleme: 
-				- Es werden eine begrenzte Anzahl von Prozessen benötigt, weil, vor allem in weniger komplexen Sudokus, beispielsweise nur maximal 50 Knoten in einer Tiefe im Graphen vorkommen können und die komplette Leistung des Clusters nicht ausgenutzt werden kann.
-			Probleme:
-				- Der Speicher wird bei sehr großen Sudokus und sehr vielen Prozessen sehr groß (100x100x4Bytes bei int sind 40 MB, bei 1000 Sudokus sind das 40GB benötigter Speicher)
-			
-			
 		
 		
 

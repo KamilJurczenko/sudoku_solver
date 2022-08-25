@@ -21,6 +21,9 @@
     <ClCompile Include="source.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="queue.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sudoku_seriell.h">

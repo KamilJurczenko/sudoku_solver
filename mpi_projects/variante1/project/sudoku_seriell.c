@@ -12,63 +12,34 @@ Original Author:
 
 *********************************************************************/
 
-#include <string.h>
+//#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
 #include "sudoku_seriell.h"
+
 #include <direct.h>
 #include <time.h>
 #define getcwd _getcwd
-//#include <windows.h>
+#include <windows.h>
 
-// Linked List Functions
-grids* create_grid(struct grid newGrid, int start) {
-	grids* newGrids = malloc(sizeof(grids));
-	if (NULL != newGrids) {
-		newGrids->grid = newGrid;
-		newGrids->next = NULL;
-		if (start) newGrids->start = 1;
-	}
-	return newGrids;
-}
-
-void insert_end(grids* gridList, struct grid grid)
+void enqueue_cpy(grids_queue** grid_queue, struct grid grid)
 {
-	grids* ptr;
-	ptr = gridList;
 	size_t size = grid.size * grid.size * sizeof(int);
-	int* cpyArr = malloc(size);
-	int* srcArr = grid.sudoku;
-	memcpy(cpyArr, srcArr, size);
+	int* cpy_sudoku = malloc(size);
+	int* src_sudoku = grid.sudoku;
+	memcpy(cpy_sudoku, src_sudoku, size);
 	struct grid cpyGrid;
-	cpyGrid.sudoku = cpyArr;
+	cpyGrid.sudoku = cpy_sudoku;
 	cpyGrid.size = grid.size;
+	enqueue(grid_queue, cpyGrid);
 	//printBoard(&cpyGrid);
-	//printBoard(&cpyGrid);
-	if (ptr->start != 1)
-	{
-		while (ptr->next != NULL)
-		{
-			ptr = ptr->next;
-		}
-		ptr->next = create_grid(cpyGrid, 0);
-	}
-	//overwrite root Grid
-	else
-	{
-		ptr->start = 0;
-		ptr->grid = cpyGrid;
-	}
 }
 
-void delete_grids(grids* oldGrids) {
-	if (NULL != oldGrids->next) {
-		delete_grids(oldGrids->next);
-	}
-	free(oldGrids->grid.sudoku);
-	free(oldGrids);
+void delete_grids(grids_queue* oldGrids) {
+	if(dequeue(&oldGrids).size != NULL)
+		delete_grids(oldGrids);
 }
 
 // Checks whether it will be legal
@@ -77,7 +48,6 @@ void delete_grids(grids* oldGrids) {
 int isSafe(struct grid g, int row,
 	int col, int num)
 {
-
 	// Check if we find the same num
 	// in the similar row , we return 0
 	for (int x = 0; x <= g.size - 1; x++)
@@ -116,13 +86,13 @@ void printBoard(struct grid* grid)
 	printf("\n");
 }
 
-void printPartSudokus(grids* su)
+void printPartSudokus(grids_queue* partSudokus)
 {
-	grids* b = su;
-	while (b != NULL)
+	grids_queue* tmp_partSudokus = partSudokus;
+	while (tmp_partSudokus != NULL)
 	{
-		printBoard(&b->grid);
-		b = b->next;
+		printBoard(&tmp_partSudokus->item);
+		tmp_partSudokus = tmp_partSudokus->next;
 	}
 }
 
@@ -132,14 +102,17 @@ such a way to meet the requirements for
 Sudoku solution (non-duplication across rows,
 columns, and boxes)
 Return 1 when Solution exist, 0 when no Solution*/
-int solveSudoku(struct grid* grid, int row, int col, grids* gridList, int* gridCount)
+int solveSudoku(struct grid* grid, int row, int col, grids_queue** gridQueue, int* gridCount, int cacheGrids)
 {
 	int index = row * grid->size + col;
+	//if(index > 170)
+	//	printBoard(grid);
 	// Check if we have reached the 8th row
 	// and 9th column (0
 	// indexed matrix) , we are
 	// returning true to avoid
 	// further backtracking
+	// Solution found!
 	if (row == grid->size - 1 && col == grid->size)
 		return 1;
 
@@ -157,9 +130,28 @@ int solveSudoku(struct grid* grid, int row, int col, grids* gridList, int* gridC
 	// value >0, we iterate for next column
 
 	if (grid->sudoku[index] > 0)
-		return solveSudoku(grid, row, col + 1, gridList, gridCount);
+		return solveSudoku(grid, row, col + 1, gridQueue, gridCount, cacheGrids);
 
-	for (int num = 1; num <= grid->size; num++)
+	int multiplePaths = 0;
+	// First for loop to check for multiple next possiblities to attempt to cache one for manager process
+	if (cacheGrids == 1) 
+	{
+		int count = 0;
+		for (int num = 1; num <= grid->size; num++)
+		{
+			if (isSafe(*grid, row, col, num) == 1)
+			{
+				count++;
+				if (count > 1) 
+				{
+					multiplePaths = 1;
+					break;
+				}
+			}
+		}
+	}
+	int cachedGrid = 0;
+	for (int num = 0; num <= grid->size; num++)
 	{
 		// Check if it is safe to place
 		// the num (1-9) in the
@@ -175,24 +167,29 @@ int solveSudoku(struct grid* grid, int row, int col, grids* gridList, int* gridC
 			grid->sudoku[index] = num;
 
 			// Cache grid if starting Grid needed and return to deny backtracking
-			if (gridList != NULL && &gridCount != NULL)
+			if (gridQueue != NULL && &gridCount != NULL)
 			{
 				//printBoard(grid);
 				// Add grid to list
-				insert_end(gridList, *grid);
+				enqueue_cpy(gridQueue, *grid);
 				//printBoard(&gridList->grid);
 				//printPartSudokus(gridList);
 				// Set Counter
 				*gridCount += 1;
 				continue;
 			}
-
-			// Checking for next possibility with next
-			// column
-			if (solveSudoku(grid, row, col + 1, NULL, gridCount) == 1)
+			// cache grid
+			if (multiplePaths == 1 && cachedGrid == 0)
+			{
+				if (attemptGridCache(*grid) == 1)
+				{
+					cachedGrid = 1;
+					continue;
+				}
+			}
+		    if (solveSudoku(grid, row, col + 1, NULL, gridCount, cacheGrids) == 1)
 				return 1;
 		}
-
 		// Removing the assigned num ,
 		// since our assumption
 		// was wrong , and we go for next
@@ -200,6 +197,7 @@ int solveSudoku(struct grid* grid, int row, int col, grids* gridList, int* gridC
 		// diff num value
 		grid->sudoku[index] = 0;
 	}
+	// No Solution return 0;
 	return 0;
 }
 
@@ -263,35 +261,25 @@ struct grid readGridFromFile(char* fileName)
 }
 
 // ToDo fehlerzüstände abfangen wenn zu viele Prozesse für das Sudokufeld gewählt wurden
-grids* initParallel(int processCount, int* sudokusCount, char* sudokuFile)
+grids_queue* initParallel(int processCount, int* sudokusCount, char* sudokuFile)
 {
 	struct grid rootGrid;
-
 	int gridSize;
-	/*
-	char buildPath[] = "..\\..\\..\\..\\sudokus\\"; // TODO use as argument?
-	char debugPath[] = "..\\..\\sudokus\\";
-	char fromScript[] = "..\\sudokus\\";
-	char* sudokuPath = buildPath; // Change here
-	char* path = malloc(strlen(sudokuPath) + strlen(sudokuFile) + 1);
-	strcpy(path, sudokuPath);
-	strcat(path, sudokuFile);
-	*/
+
 	char cwd[512];
 	if (getcwd(cwd, sizeof(cwd)) != NULL) {
 		D(printf("Current working dir: %s\n", cwd));
 	}
-	//sudokuNormal9 , sudokuNormal16, sudokuHard16, sudokuExtreme25, sudoku100 
-	//rootGrid = readGridFromFile(strcat(buildPath, file), &gridSize); // fürs exec
-	rootGrid = readGridFromFile(sudokuFile, &gridSize); // fürs debuggen
+
+	rootGrid = readGridFromFile(sudokuFile);
 
 	//printf("Starting Sudoku: \n");
 	//printBoard(&rootGrid);
 
-	// init Grid List with starting Sudoku Grid
-	grids* gridList = create_grid(rootGrid, 0);
+	// init Grid Queue with starting Sudoku Grid
+	grids_queue* starting_gridQueue = NULL;
+	enqueue(&starting_gridQueue, rootGrid);
 	*sudokusCount = 1;
-
 	//int currentDepth = -1; // counter val for current depth of breadth search
 
 	// breadth search till breadth = num or breadth < num
@@ -299,21 +287,21 @@ grids* initParallel(int processCount, int* sudokusCount, char* sudokuFile)
 	{
 		// tmp variables for one breadth graph iteration in a depth
 		int tmpListCount = 0;
-		grids* tmpGridList = create_grid(rootGrid, 1);
-		grids* currentGrid = gridList; // pointer to first Grid Element
+		grids_queue* tmp_gridQueue = NULL;
+		grids_queue* ptr = starting_gridQueue; // pointer to first Grid Element
 		// Iterate one graph depth
-		while (currentGrid != NULL)
+		struct grid nextGrid;
+		while (ptr != NULL)
 		{
-			solveSudoku(&currentGrid->grid, 0, 0, tmpGridList, &tmpListCount);
+			struct grid mGrid = dequeue(&starting_gridQueue);
+			//printBoard(&mGrid);
+			solveSudoku(&mGrid, 0, 0, &tmp_gridQueue, &tmpListCount,0);
+			ptr = starting_gridQueue;
 			//printBoard(&tmpGridList->grid);
-			currentGrid = currentGrid->next;
 		}
 
-		/*grids* test = tmpGridList->next;
-		grids* test2 = test->next;*/
-
-		delete_grids(gridList);
-		gridList = tmpGridList;
+		delete_grids(starting_gridQueue);
+		starting_gridQueue = tmp_gridQueue;
 		*sudokusCount = tmpListCount;
 		//currentDepth++;
 		//if (currentDepth == 50000) break; // for debugging
@@ -321,8 +309,8 @@ grids* initParallel(int processCount, int* sudokusCount, char* sudokuFile)
 	// Print found starting Sudokus and further information			
 	D(printf("Found %d Sudokus to parallelize\n", *sudokusCount));
 	printf("%d\n", *sudokusCount);
-	//printPartSudokus(gridList); // for debugging
-	return gridList;
+	//printPartSudokus(starting_gridQueue); // for debugging
+	return starting_gridQueue;
 }
 /*
 int main()

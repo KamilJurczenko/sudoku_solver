@@ -148,6 +148,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="queue.c" />
     <ClCompile Include="source.c" />
     <ClCompile Include="sudoku_seriell.c" />
   </ItemGroup>

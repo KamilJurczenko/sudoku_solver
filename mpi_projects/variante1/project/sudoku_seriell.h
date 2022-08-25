@@ -13,18 +13,36 @@ struct grid {
 	int size;
 };
 
-typedef struct s_grids {
-	struct grid grid;
-	int start;
-	struct grids* next;
-} grids;
+typedef struct grids {
+	struct grid item;
+	struct grids_queue *next;
+} grids_queue;
 
-void delete_grids(grids* oldGrids);
+typedef struct processes {
+	int pid;
+	struct processes_queue* next;
+} processes_queue;
+
+const static struct grid emptyGrid = { NULL, 0 };
+
+void enqueue(grids_queue** head, struct grid val);
+
+struct grid dequeue(grids_queue** head);
+
+void intEnqueue(processes_queue** head, int pid);
+
+int intDequeue(processes_queue** head);
+
+void delete_grids(grids_queue* oldGrids);
 
 void printBoard(struct grid* grid);
 
-grids* initParallel(int processCount, int* listSize, char* sudokuFile);
+void printPartSudokus(grids_queue* partSudokus);
 
-int solveSudoku(struct grid* grid, int row, int col, grids* gridList, int* gridCount);
+grids_queue* initParallel(int processCount, int* listSize, char* sudokuFile);
+
+int solveSudoku(struct grid* grid, int row, int col, grids_queue** grid_queue, int* gridCount, int cacheGrids);
+
+int attemptGridCache(struct grid sudokuGrid);
 
 #endif
