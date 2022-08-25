@@ -319,7 +319,7 @@ grids* initParallel(int processCount, int* sudokusCount, char* sudokuFile)
 		//if (currentDepth == 50000) break; // for debugging
 	}
 	// Print found starting Sudokus and further information			
-	D(printf("Found %d Sudokus to parallelize\n", *sudokusCount));
+	printf("Found %d Sudokus to parallelize\n", *sudokusCount);
 	printf("%d\n", *sudokusCount);
 	//printPartSudokus(gridList); // for debugging
 	return gridList;

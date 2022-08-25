@@ -24,9 +24,9 @@ void lookForSolution(struct grid grid, int rank)
 
 	if (solutionFound == 1)
 	{
-		D(printf("Solution found on pid %d \n", rank));
+		//printf("Solution found on pid %d \n", rank);
 		// Lösung ausgeben
-		D(printBoard(&grid));
+		//printBoard(&grid);
 		double end_time = MPI_Wtime();
 		solutionFindTime = end_time - start_time;
 		if(rank != 0)
@@ -50,7 +50,7 @@ struct grid recvGrid(int gridSize)
 	struct grid g;
 	g.sudoku = recvGrid;
 	g.size = gridSize;
-	//printBoard(&g);
+	printBoard(&g);
 	return g;
 }
 
@@ -100,7 +100,6 @@ int main(int argc, char** argv) {
 		sudokuList = initParallel(process_count - 1, &sudokuListSize, file);
 		initDuration = MPI_Wtime() - startInit_time;
 	    gridSize = sudokuList->grid.size;
-
 		//int* data;
 		//data = (int*)malloc((process_count - 1) * sizeof(int));
 	    recvRequests = (MPI_Request*)malloc((process_count - 1) * sizeof(MPI_Request));
