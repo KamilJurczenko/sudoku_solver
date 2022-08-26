@@ -176,18 +176,13 @@ int solveSudoku(struct grid* grid, int row, int col, grids_queue** gridQueue, in
 				//printPartSudokus(gridList);
 				// Set Counter
 				*gridCount += 1;
-				continue;
 			}
 			// cache grid
-			if (multiplePaths == 1 && cachedGrid == 0)
+			else if (multiplePaths == 1 && attemptGridCache(*grid) == 1)
 			{
-				if (attemptGridCache(*grid) == 1)
-				{
-					cachedGrid = 1;
-					continue;
-				}
+				multiplePaths = 0;
 			}
-		    if (solveSudoku(grid, row, col + 1, NULL, gridCount, cacheGrids) == 1)
+			else if (solveSudoku(grid, row, col + 1, NULL, NULL, cacheGrids) == 1)
 				return 1;
 		}
 		// Removing the assigned num ,

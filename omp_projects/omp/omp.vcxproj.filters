@@ -20,5 +20,8 @@
     <ClCompile Include="omp.c">
       <Filter>Quelldatein</Filter>
     </ClCompile>
+    <ClCompile Include="queue.c">
+      <Filter>Quelldatein</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

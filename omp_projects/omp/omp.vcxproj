@@ -130,6 +130,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="omp.c" />
+    <ClCompile Include="queue.c" />
     <ClCompile Include="sudoku_seriell.c" />
   </ItemGroup>
   <ItemGroup>

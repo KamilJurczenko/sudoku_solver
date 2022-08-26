@@ -65,14 +65,12 @@ void computeGrid(struct grid grid, int cacheGrids)
 	if (solveSudoku(&grid, 0, 0, NULL, NULL, cacheGrids) == 1)
 	{
 		printf("<<<<<<<<<<<<<<<<<Solution found on pid %d >>>>>>>>>>>>>>>>>>>>>\n", pid);
-		fflush(stdout);
+		//fflush(stdout);
 		// Lösung ausgeben
 		//printBoard(&grid);
 
 		double end_time = MPI_Wtime();
 		solutionFindTime = end_time - start_time;
-		//if (pid != 0)
-			//MPI_Send(&solutionFindTime, 1, MPI_DOUBLE, 0, SOLUTION_TIME, MPI_COMM_WORLD);
 	}
 	//debug_computedGrids++;
 	free(grid.sudoku);
@@ -223,8 +221,8 @@ int main(int argc, char** argv) {
 				}
 			}
 		} while (computationFinished == 0);
-		//if (solutionFindTime == 0)
-			//MPI_Recv(&solutionFindTime, 1, MPI_DOUBLE, MPI_ANY_SOURCE, SOLUTION_TIME, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		if (solutionFindTime == 0)
+			MPI_Recv(&solutionFindTime, 1, MPI_DOUBLE, MPI_ANY_SOURCE, SOLUTION_TIME, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 
 		D(printf("No Sudokus left! The End...\n"));
 	}
@@ -256,6 +254,8 @@ int main(int argc, char** argv) {
 			}
 			//Sleep(100);
 		} while (manager_idlingStatus == 1);
+		if (pid != 0)
+			MPI_Send(&solutionFindTime, 1, MPI_DOUBLE, 0, SOLUTION_TIME, MPI_COMM_WORLD);
 		//printf("pid %i idling...", pid);
 		//fflush(stdout);
 	}

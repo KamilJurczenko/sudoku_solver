@@ -3,95 +3,106 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <windows.h>
+#include <time.h>
 
-int solution_found = 0;
 double solutionFindTime;
 double start_time;
 
-// sucht eine Lösung für das übergebene Sudoku Feld
-void lookForSolution(grids* sudoku, int rank)
-{
-	/*if (solution_found)
-		return;*/
+grids_queue* available_gridsQ = NULL;
+int gridsNum;
+int idlingProcessesNum = 0;
+int threadNum;
 
-	if (solveSudoku(&sudoku->grid, 0, 0, NULL, NULL) == 1)
+int attemptGridCache(struct grid sudokuGrid)
+{
+	if (gridsNum < idlingProcessesNum)
 	{
-		solution_found = 1;
-		D(printf("Solution found on tid %d \n", rank));
-		// Lösung ausgeben
-		double end_time = omp_get_wtime();
-		solutionFindTime = end_time - start_time;
-		D(printBoard(&sudoku->grid));
-		// ToDo OPTIMIERUNG: restlichen Prozesse vorzeitig beenden
+		#pragma omp critical
+		{
+			enqueue_cpy(&available_gridsQ, sudokuGrid);
+			gridsNum++;
+		}
+		return 1;
 	}
-	/*
-	else
-	{
-		printf("Thread %d has no Solution for its Grid\n", rank);
-	}
-	*/
+	else return 0;
 }
 
 int main(int argc, char** argv) {
-	int thread_num;
 
 	double end_time;
 	double duration;
 	double initDuration;
 
-	thread_num = atoi(argv[1]);
+	threadNum = atoi(argv[1]);
 	char* file = argv[2];
-	omp_set_num_threads(thread_num);
+	omp_set_num_threads(threadNum);
 	start_time = omp_get_wtime();
-	char sudokus[] = "sudokuNormal9, sudokuNormal16, sudokuHard16, sudokuExtreme25, sudoku100";
-	D(printf("Available Sudokus: %s\n", sudokus));
+	
+	/*
+	if (1)
+	{
+	int t;
+	scanf("%i", &t);
+	}
+	*/
+	
 	// CODE START
 
-	if (thread_num == 0)
+	if (threadNum == 0)
 		return 0;
 
-	grids* sudokuList = NULL;
-	grids* ptr = NULL;
-	int sudokuListSize = 0;
-	int i = 1;
-
-#pragma omp parallel
-{
-		// Erster Thread erstellt Sudokus
-#pragma omp single
+	#pragma omp parallel
+	{
+		// First Thread initializes first sudoku grids to compute
+		#pragma omp single
 		{
 			double startInit_time = omp_get_wtime();
-			sudokuList = initParallel(thread_num, &sudokuListSize, file); // Jeder Thread wird rechnen!
-		    initDuration = omp_get_wtime() - startInit_time;
-			ptr = sudokuList;
-			//lookForSolution(omp_get_thread_num());
+			available_gridsQ = initParallel(threadNum, &gridsNum, file);
+			initDuration = omp_get_wtime() - startInit_time;
 		}
-#pragma omp for
-		for (i = 0; i < sudokuListSize; i++)
-		{
-			//printf("%d\n", omp_get_thread_num());
-			int j = i;
-			int jj = 0;
-			grids* tmpPtr = ptr;
-			while (jj < j) {
-				tmpPtr = tmpPtr->next;
-				jj++;
+		
+		int isIdling = 0;
+		double totalComputeTime = 0;
+		do {
+			struct grid nextSudoku;
+			#pragma omp critical
+				nextSudoku = dequeue(&available_gridsQ);
+			if (nextSudoku.size > 0)
+			{
+				#pragma omp atomic
+					gridsNum--;
+				if (isIdling == 1) {
+					isIdling = 0;
+					#pragma omp atomic
+						idlingProcessesNum--;
+				}
+				double t = omp_get_wtime();
+				if (solveSudoku(&nextSudoku, 0, 0, NULL, NULL) == 1)
+				{
+					//printf("<<<<<<<<<<<<<<<<<Solution found on pid %d >>>>>>>>>>>>>>>>>>>>>\n", omp_get_thread_num());
+					// Lösung ausgeben
+					//printBoard(&grid);
+					solutionFindTime = omp_get_wtime() - start_time;
+				}
+				t = omp_get_wtime() - t;
+				#pragma omp atomic
+					totalComputeTime += t;
+				free(nextSudoku.sudoku);
 			}
-			lookForSolution(tmpPtr, omp_get_thread_num());
-		}
-}
-
-	delete_grids(sudokuList);
-	D(printf("No Sudokus left! The End...\n"));
-
-	// CODE END
+			else if (isIdling == 0) // TODO measure IDLING TIME
+			{
+				isIdling = 1;
+				#pragma omp atomic
+					idlingProcessesNum++;
+				//printf("idling processes= %i grids= %i\n", idlingProcessesNum, gridsNum);
+			}
+		} while (idlingProcessesNum < threadNum);
+		printf("took %f seconds to compute w thread %i \n", totalComputeTime, omp_get_thread_num());
+	}
 
 	end_time = omp_get_wtime();
 
 	duration = end_time - start_time;
-	D(printf("\\\\     //\n"));
-	D(printf(" \\\\   //\n"));
-	D(printf("  \\\\_// Duration: %f\n", duration));
 	printf("%f\n", duration);
 	printf("%f\n", solutionFindTime);
 	printf("%f\n", initDuration);
