@@ -21,30 +21,28 @@ Der Algorithmus verläuft folglich als Pseudocode:
 Dieser Algorithmus hat im schlimmsten Fall eine exponentielle Laufzeit von z^N und ist dementsprechend sehr Aufwendig.
 Dieses Problem lässt sich unter Umständen parallelisieren. Da der Algorithmus rekursiv verläuft, wird eine Parallelisierung der Lösungsfindung problematisch, weshalb alternative Lösungen gefunden werden müssen.
 		
-Man Stelle sich eine Sudoku und alle möglichen Einträge in den Feldern als einen Graphen vor, wobei ein Knoten ein Sudoku sei. Die Wurzel ist das Sudoku was gelöst werden soll und die Kinderknoten weitere Sudokus die aus dem Wurzelsudoku stammen und ein weiteres gefülltes Feld besitzen. Um die Traversierung des Baumes zu parallelisieren muss der gesamte Baum in einzelne Bäum/Äste geteilt werden, damit ein Prozess diesen abbarbeiten kann. Das Problem ist jedoch die Bereitstellung dieser Äste worauf einige Strategien entwickelt wurden.
-
 ![text](./sudokuBaum.png)
-
-## Probleme:
-- Es werden eine begrenzte Anzahl von Prozessen benötigt, weil, vor allem in weniger komplexen Sudokus, beispielsweise nur maximal 50 Knoten in einer Tiefe im Graphen vorkommen können und die komplette Leistung des Clusters nicht ausgenutzt werden kann. 
-- Zu Variante (2) Einige Prozesse finden schnell keine Lösung und müssen warten wenn keine Teilsudokus mehr übrig sind, während andere Prozesse lange rechnen.
+		
+Man Stelle sich ein Sudoku und alle möglichen Einträge in den Feldern als einen Graphen vor, wobei ein Knoten ein Sudoku sei. Die Wurzel ist das Sudoku welches gelöst werden soll, und die Kinderknoten weitere Sudokus die aus dem Wurzelsudoku stammen und ein weiteres gefülltes Feld besitzen. Um die Traversierung des Baumes zu parallelisieren muss der gesamte Baum in einzelne Bäum/Äste geteilt werden, damit ein Prozess diesen unabhängig abbarbeiten kann. Das Problem ist jedoch die Bereitstellung dieser Äste worauf einige Strategien entwickelt wurden.
 
 ## Parallelisierungsvarianten			
 Es wurde mit Hilfe von MPI und Open MP in der Programmiersprache C parallelisiert.
 ##### (1) Variante mit MPI
-- Prozess 1 erstellt die Sudokus, während alle restlichen Prozesse warten. Nach der Erstellung gibt Prozess 1 jedem verfügbaren Prozess ein Sudoku, mit dem dann eine Lösung gesucht wird.
- Findet ein Prozess keine Lösung dann sendet dieser eine Nachricht an Prozess 1 und fragt nach einem neuen Sudoku, falls vorhanden.
- Der Ablauf wird solange wiederholt bis keine Sudokus mehr vorhanden sind, oder irgendwo schon eine Lösung gefunden wurde.
+- Prozess 1 erstellt anfangs Sudokus aus dem Wurzelsudoku, während alle restlichen Prozesse warten. Nach der Erstellung gibt Prozess 1 jedem verfügbaren Prozess ein Sudoku, mit dem dann eine Lösung gesucht wird. Damit ein Prozess nicht zu lange warten muss werden Sudokus vorweg im Verwaltungsprozess mit einer Queue mit begrenzter Anzahl (= Anzahl Prozesse-1) zwischengespeichert. Jeder Berechnungsprozess überprüft mit einer Breitensuche, ob es im aktuellen Feld mehrere Lösungen gibt. Falls dies der Fall ist, dann fragt derjenige Prozess, ob die Queue im Verwaltungsprozess noch nicht voll ist, damit ein neues Sudoku zugeschickt werden kann. Wenn ein Prozess fertig ist dann fragt dieser neue Sudokus aus der Queue an.
 
 ##### (2) Naive Variante mit OMP
-- Jeder Prozess ruft initParallel und es entstehen Redundanzen. 
-Es kann jedoch jeder Prozess ein Sudoku abbarbeiten, wohingegen bei Variante 1 ein Prozess zum Managment verwendet wird der nie Sudokus abbarbeitet.
+- initParallel() wird von einem Thread blockierend aufgerufen bis mindestens so viele Sudokus wie Anzahl Threads mit einer Breitensuche gefunden und in einer Liste gespeichert wurden. Daraufhin teilt sich jeder Thread die Sudokus aus der Liste und sucht eine Lösung. Bei einer gefundenen Lösung wird eine Variable im gemeinsamen Speicher auf 1 gesetzt um den anderen Threads mitzuteilen die Berechnung abbzubrechen.
 
 ##### (3) OMP mit rekursiven Tasks
 - Der Master Thread führt auf die Berechnungsmethode eine Task aus. In jedem Task werden weitere Tasks ausgeführt, falls weitere Knoten folgen.
     - Hierbei werden nur so viele Tasks erstellt wie Anzahl Threads um overhead zu vermeiden.
 
 Für die Parallelisierung von Methode (1) und (2) wurde eine Hilfsmethode implementiert der den Graphen mithilfe einer Breitensuche traversiert und Sudokufelder zwischenspeichert(initParallel()). Dies wird ausgenutzt, damit vor der eigentlichen Parallelisierung genug Sudokufelder für Prozesse vorhanden sind. Die Breitensuche wird solange ausgeführt bis in einer Tiefe/Ebene im Graphen mindestens so viele Knoten wie Prozesse existieren. Falls es mehr Startsudokus als Prozesse gibt, dann werden diese gespeichert, damit ein Prozess der sein Anfangssudoku abgearbeitet hat, versuchen kann ein weiteres Sudoku zu lösen.
+
+## Probleme:
+- Es werden eine begrenzte Anzahl von Prozessen benötigt, weil, vor allem in weniger komplexen Sudokus, beispielsweise nur maximal 50 Knoten in einer Tiefe im Graphen vorkommen können und die komplette Leistung des Clusters nicht ausgenutzt werden kann. 
+- Zu Variante (2) Einige Prozesse finden schnell keine Lösung und müssen warten wenn keine Teilsudokus mehr übrig sind, während andere Prozesse lange rechnen.
+- Große Sudokus müssen von einem einzelnen Prozess verwaltet werden, was zu einem großen Overhead führen könnte wenn die Queue aus Variante (1) groß ist.
 
 ## Messungen
 
@@ -66,17 +64,18 @@ OMP task scheint mit der Anzahl der Cores schlecht zu skalieren. Begründen läs
 ![text](./16x16n.png)	
 
 
-
 ![text](./cluster.png)	
 			
+Die Lösung für ein sehr Schweres 9x9 Sudoku lässt sich im Cluster mit 256 Kernen sehr schnell finden, woraufhin die Zeit für das 16x16 normale Sudoku mit der Core Anzahl ansteigt. 
+Mit 256 Cores wurden 280 Startsudokus generiert die von einem einzigen Prozess verwaltet werden müssen. Ein 16x16 Sudoku entspricht 4*256 Bytes = 1024 Bytes und 9x9 324 Bytes, das der Verwaltungsprozess schickt und empfängt. Die Teilung des Baumes spielt dabei auch ein große Rolle. Im 16x16 Sudoku ist das Sudoku mit der Lösung mit großer Wahrscheinlichkeit anfangs im Speicher des Verwaltungsprozess, weshalb es zu langen Berechnungszeiten kommt.
+
+
 ## Fazit
 Der Sudokubaum skaliert mit der Schwierigkeit und der Größe des Wurzel-/Anfangssudokus im Graphen und es dauert länger diesen zu lösen.
-Die naive OMP Methode skaliert mit der Core Anzahl, von allen gemessenen Parallelisierungsvarianten, am besten. Obwohl diese Variante am ineffizientesten scheint, weil viele Threads warten müssen wenn keine Anfangssudokus mehr übrig sind, ist diese jedoch die schnellste von allen getesteten Methoden.
-Es zeigte sich, das die Implementation von Methode (2) und (3) mit OMP mit wenigeren Zeilen Programmiercode als mit (1) mit MPI. 
-Dadurch das man bei OMP mit einem gemeinsamen Speicher arbeitet, wird keine Kommunikation wie bei MPI benötigt und vieles erleichtert. Zusätzlich wird das Scheduling durch OMP realisiert, wodurch man kein "Manager" Thread benötigt der jedem Thread ein Sudoku schickt.
+Die naive OMP Methode skaliert mit der Core Anzahl, von allen gemessenen Parallelisierungsvarianten, am besten. Obwohl diese Variante am ineffizientesten zu scheinen sei, weil viele Threads warten wenn keine Anfangssudokus mehr übrig sind, ist diese jedoch die schnellste von allen getesteten Methoden.
 
-Idealerweise hat man bei 2 Prozessen und Cores eine halbierung der Berechnungszeit als bei nur einem Prozess und Core. Die Messungen zeigten aber das man bei einem 16x16 Sudoku mit Normaler Schwierigkeit mit dem Parallelisierungsverfahren bei 16 Prozessen
-und Cores nur eine sehr geringe Verbesserung von ca 0.7 Sekunden verglichen mit nur einem Prozess aufweist (siehe rawdata\old data\mpi\sudokuNormal16). 
+Es zeigte sich, das die Implementation von Methode (2) und (3) mit OMP mit wenigeren Zeilen Programmiercode als mit (1) mit MPI realisiert wurde. 
+Dadurch das man bei OMP mit einem gemeinsamen Speicher arbeitet, wird keine Kommunikation wie bei MPI benötigt und vieles beim Programmieren erleichtert. Zusätzlich wird das Scheduling durch OMP realisiert, wodurch man kein Verwaltungsthread selber programmieren muss.
 
 
 Referenzen:
