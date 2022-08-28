@@ -31,39 +31,7 @@ Für die Parallelisierung wurden zum Seriellen Code bestimmte Modifikationen dur
 								Vor der eigentlichen Parallelisierung muss die Methode initParallel(int processCount) im seriellen Code aufgerufen werden.
 								initParallel erstellt ausgehend vom Wurzelsudoku Sudokus, indem eine Breitensuche durchgeführt wird. Es wird solange eine Breitensuche durchgeführt bis auf einer Tiefe/Ebene im Graphen mindestens so viele 
 								Knoten wie Prozesse sind. Die Sudokus werden in eine Liste abgespeichert.
-<<<<<<< HEAD
-								
-[Parallelisierungsvarianten]	Es wurden zwei Varianten zu der Parallelisierung angewendet:
-								(1) Variante 1
-									- Prozess 1 erstellt die Sudokus, während alle restlichen Prozesse warten. Nach der Erstellung gibt Prozess 1 jedem verfügbaren Prozess ein Sudoku, mit dem dann eine Lösung gesucht wird.
-									  Findet ein Prozess keine Lösung dann sendet dieser eine Nachricht an Prozess 1 und fragt nach einem neuen Sudoku, falls vorhanden.
-									  Der Ablauf wird solange wiederholt bis keine Sudokus mehr vorhanden sind, oder irgendwo schon eine Lösung gefunden wurde.
-								(2) Variante 2
-									- Jeder Prozess ruft initParallel und es entstehen Redundanzen. 
-									  Es kann jedoch jeder Prozess ein Sudoku abbarbeiten, wohingegen bei Variante 1 ein Prozess zum Managment verwendet wird der nie Sudokus abbarbeitet.
-									  
-			HIER GRAFIK (BAUM/GRAPH)						  
-									  
-			
-			Die Parallelisierung wurde mit MPI und OMP realisiert:
-				Die Zeiten für die Berechnung eines Sudokus sind bei MPI und OMP sehr ähnlich. Es zeigte sich das die Implementation von OMP einfacher ist. OMP wurde mit 100 Zeilen Code realisiert, wohingegen der MPI Code das doppelte mit ca. 200 Zeilen enthält.
-			
-			
-		Mögliche Probleme: 
-			- Es werden eine begrenzte Anzahl von Prozessen benötigt, weil, vor allem in weniger komplexen Sudokus, beispielsweise nur maximal 50 Knoten in einer Tiefe im Graphen vorkommen können und die komplette Leistung des Clusters nicht ausgenutzt werden kann.
-			
-		Probleme:
-			- Der Speicher wird bei sehr großen Sudokus und sehr vielen Prozessen sehr groß (100x100x4Bytes bei int sind 40 MB, bei 1000 Teilsudokus sind das 40GB benötigter Speicher)
-			- (2) Einige Prozesse finden schnell keine Lösung, es sind aber keine Teilsudokus mehr zum Rechnen übrig. Andere Prozesse müssen lange rechnen während manche Prozesse idlen.
-				  Idealerweise hat man bei 2 Prozessen und Cores eine halbierung der Berechnungszeit als bei nur einem Prozess und Core. Die Messungen zeigten aber das man bei einem 16x16 Sudoku mit Normaler Schwierigkeit mit dem Parallelisierungsverfahren bei 16 Prozessen
-				  und Cores nur eine sehr geringe Verbesserung von ca 0.7 Sekunden verglichen mit nur einem Prozess aufweist (siehe rawdata\old data\mpi\sudokuNormal16). 
-		
-		Weitere Forschungen/Verbesserungen:
-			- Um das Problem (2) zu lösen, wurde der Code optimiert.
-				
-		
-		
-=======
+
 				
 ### 	Parallelisierungsvarianten			
 Es wurden zwei Varianten zu der Parallelisierung angewendet:
@@ -99,7 +67,6 @@ und Cores nur eine sehr geringe Verbesserung von ca 0.7 Sekunden verglichen mit 
 ## Probleme:
 - Es werden eine begrenzte Anzahl von Prozessen benötigt, weil, vor allem in weniger komplexen Sudokus, beispielsweise nur maximal 50 Knoten in einer Tiefe im Graphen vorkommen können und die komplette Leistung des Clusters nicht ausgenutzt werden kann. 
 - Zu Variante (2) Einige Prozesse finden schnell keine Lösung und müssen warten wenn keine Teilsudokus mehr übrig sind, während andere Prozesse lange rechnen.
->>>>>>> mpi_dynamic
 
 
 Referenzen:
