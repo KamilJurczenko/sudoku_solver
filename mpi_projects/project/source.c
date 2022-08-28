@@ -97,6 +97,74 @@ int getManagerStatus() {
 	return managerStatus;
 }
 
+// Caches first grid without doing a Breadth search first
+int solveSudokuNoBreadthSearch(struct grid* grid, int row, int col, grids_queue** gridQueue, int* gridCount)
+{
+	int index = row * grid->size + col;
+
+	if (row == grid->size - 1 && col == grid->size)
+		return 1;
+
+	if (col == grid->size)
+	{
+		row++;
+		col = 0;
+	}
+
+	if (grid->sudoku[index] > 0)
+		return solveSudoku(grid, row, col + 1, gridQueue, gridCount);
+
+	// First for loop to check for multiple next possiblities to attempt to cache one
+	for (int num = 1; num <= grid->size; num++)
+	{
+		if (isSafe(*grid, row, col, num) == 1)
+		{
+
+			grid->sudoku[index] = num;
+			if (solutionFound == 1)
+				break;
+
+			// Cache grid if starting Grid needed and return to deny backtracking
+			if (gridQueue != NULL && &gridCount != NULL)
+			{
+				// Add grid to list
+				enqueue_cpy(gridQueue, *grid);
+				// Set Counter
+				*gridCount += 1;
+			}
+			else
+			{
+				// attempt cache grid
+				if (pid != 0)
+				{
+					// Get manager status
+					int managerStatus = getManagerStatus();
+					// Cancel computation
+					if (managerStatus == SOLUTION_FOUND)
+					{
+						solutionFound = 1;
+						break;
+					}
+					else if (managerStatus != GRIDS_FULL)
+					{
+						// Send current Grid
+						MPI_Send(grid->sudoku, gridSize, MPI_INT, 0, MANAGER_RECV_GRIDS, MPI_COMM_WORLD);
+					}
+					else if (solveSudoku(grid, row, col + 1, NULL, NULL) == 1)
+						return 1;
+				}
+				else if (solveSudoku(grid, row, col + 1, NULL, NULL) == 1)
+					return 1;
+			}
+
+		}
+	}
+
+	grid->sudoku[index] = 0;
+	return 0;
+}
+
+
 int solveSudoku(struct grid* grid, int row, int col, grids_queue** gridQueue, int* gridCount)
 {
 	int index = row * grid->size + col;
@@ -116,6 +184,7 @@ int solveSudoku(struct grid* grid, int row, int col, grids_queue** gridQueue, in
 	num_queue* numsQueue = NULL;
 	int numsQueueSize = 0;
 	// First for loop to check for multiple next possiblities to attempt to cache one
+	// for (int num = grid->size; num !=0; num--) //iterate num backwards
 	for (int num = 1; num <= grid->size; num++)
 	{
 		if (isSafe(*grid, row, col, num) == 1)

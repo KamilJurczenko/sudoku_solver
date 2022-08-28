@@ -1,3 +1,4 @@
 ﻿cl : befehlszeile warning D9025: "/openmp" wird durch "/openmp:llvm" überschrieben
   omp.c
+  LINK : C:\Users\Kamil\Documents\GitHub\HPC_Gruppe1\omp_projects\tasks\x64\Debug\omp.exe wurde nicht gefunden oder beim letzten inkrementellen Linkvorgang nicht erstellt; vollständiger Link wird durchgeführt.
   omp.vcxproj -> C:\Users\Kamil\Documents\GitHub\HPC_Gruppe1\omp_projects\tasks\x64\Debug\omp.exe
