@@ -1,9 +1,0 @@
-﻿  omp.c
-C:\Users\Kamil\Documents\GitHub\HPC_Gruppe1\omp_projects\naive\omp\omp.c(54,19): warning C4133: "=": Inkompatible Typen - von "grids *" zu "grids *"
-C:\Users\Kamil\Documents\GitHub\HPC_Gruppe1\omp_projects\naive\omp\omp.c(56,38): warning C4133: "=": Inkompatible Typen - von "grids *" zu "grids *"
-C:\Users\Kamil\Documents\GitHub\HPC_Gruppe1\omp_projects\naive\omp\omp.c(68,30): warning C4133: "Funktion": Inkompatible Typen - von "grids *" zu "grids *"
-C:\Users\Kamil\Documents\GitHub\HPC_Gruppe1\omp_projects\naive\omp\omp.c(125,14): warning C4133: "=": Inkompatible Typen - von "grids *" zu "grids *"
-C:\Users\Kamil\Documents\GitHub\HPC_Gruppe1\omp_projects\naive\omp\omp.c(275,42): warning C4020: "readGridFromFile": zu viele übergebene Parameter
-C:\Users\Kamil\Documents\GitHub\HPC_Gruppe1\omp_projects\naive\omp\omp.c(298,35): warning C4133: "=": Inkompatible Typen - von "grids *" zu "grids *"
-C:\Users\Kamil\Documents\GitHub\HPC_Gruppe1\omp_projects\naive\omp\omp.c(355,26): warning C4133: "=": Inkompatible Typen - von "grids *" zu "grids *"
-  omp.vcxproj -> C:\Users\Kamil\Documents\GitHub\HPC_Gruppe1\omp_projects\naive\x64\Debug\omp.exe
