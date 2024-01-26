@@ -1,6 +1,8 @@
 ### Autoren:
 Florian Neufeld
+
 Konstantin Daitche
+
 Kamil Jurczenko
 ### Sprecher:
 Kamil Jurczenko 
@@ -21,7 +23,7 @@ Der Algorithmus verläuft folglich als Pseudocode:
 Dieser Algorithmus hat im schlimmsten Fall eine exponentielle Laufzeit von z^N und ist dementsprechend sehr Aufwendig.
 Dieses Problem lässt sich unter Umständen parallelisieren. Da der Algorithmus rekursiv verläuft, wird eine Parallelisierung der Lösungsfindung problematisch, weshalb alternative Lösungen gefunden werden müssen.
 		
-![text](./sudokuBaum.png)
+![text](doc/sudokuBaum.png)
 		
 Man Stelle sich ein Sudoku und alle möglichen Einträge in den Feldern als einen Graphen vor, wobei ein Knoten ein Sudoku sei. Die Wurzel ist das Sudoku welches gelöst werden soll, und die Kinderknoten weitere Sudokus die aus dem Wurzelsudoku stammen und ein weiteres gefülltes Feld besitzen. Um die Traversierung des Baumes zu parallelisieren muss der gesamte Baum in einzelne Bäum/Äste geteilt werden, damit ein Prozess diesen unabhängig abbarbeiten kann. Das Problem ist jedoch die Bereitstellung dieser Äste worauf einige Strategien entwickelt wurden.
 
@@ -48,23 +50,23 @@ Für die Parallelisierung von Methode (1) und (2) wurde eine Hilfsmethode implem
 
 Die Messungen wurden mit einer Stichprobe von 10 je Core (bis 16 Cores) durchgeführt. Messungen über 16 Cores wurden auf dem Cluster mit einer Stichprobe von 5 geführt.
 
-![text](./9x9n.png)			
+![text](doc/9x9n.png)			
 
 Ein 9x9 Sudoku mit normaler Schwierigkeit zeigt sich als kein Problem für einen Computer. Es dauert 0.5 bis 1 Millisekunden, um das Sudoku seriell zu lösen. MPI (1) und OMP mit Tasks (3) zeigen bei der Parallelisierung Overhead bis zu Verdoppelung der Zeiten mit 8 Cores. 
 
-![text](./9x9s.png)	
+![text](doc/9x9s.png)	
 
 Schwere 9x9 Sudokus dauern mindestens doppelt so lange wie mit normaler Schwierigkeit. Bemerkenswert ist der Anstieg bei 2 Cores in MPI. Dies durch die Caching Strategie zu erklären, weil vermutlich das erste Sudoku, welches zwischengespeichert wird, die Lösung des Sudokus enthält. Die MPI Methode ist außerdem bei 2 Cores sinnlos, weil hierfür kein "Manager" Prozess benötigt wird, der nur einen Prozess verwaltet.
 
-![text](./9x9ss.png)	
+![text](doc/9x9ss.png)	
 
 Verglichen mit dem schweren 9x9 Sudoku ist ein sehr schweres 9x9 Sudoku anspruchsvoller zu berechnen.
 OMP task scheint mit der Anzahl der Cores schlecht zu skalieren. Begründen lässt sich dies durch die Speicher Alloziierung und Freistellung von neuen Sudokufeldern, die bei jedem Erstellen einer neuer Task durchgeführt wird, damit jeder Task eine neue Sudokukopie bekommt. 
 
-![text](./16x16n.png)	
+![text](doc/16x16n.png)	
 
 
-![text](./cluster.png)	
+![text](doc/cluster.png)	
 			
 Die Lösung für ein sehr Schweres 9x9 Sudoku lässt sich im Cluster mit 256 Kernen sehr schnell finden, woraufhin die Zeit für das 16x16 normale Sudoku mit der Core Anzahl ansteigt. 
 Mit 256 Cores wurden 280 Startsudokus generiert die von einem einzigen Prozess verwaltet werden müssen. Ein 16x16 Sudoku entspricht 4*256 Bytes = 1024 Bytes und 9x9 324 Bytes, das der Verwaltungsprozess schickt und empfängt. Die Teilung des Baumes spielt dabei auch ein große Rolle. Im 16x16 Sudoku ist das Sudoku mit der Lösung mit großer Wahrscheinlichkeit anfangs im Speicher des Verwaltungsprozess, weshalb es zu langen Berechnungszeiten kommt.
@@ -79,5 +81,7 @@ Dadurch das man bei OMP mit einem gemeinsamen Speicher arbeitet, wird keine Komm
 
 
 Referenzen:
+
 [1]https://www.geeksforgeeks.org/sudoku-backtracking-7/
+
 Daten aus \rawdata\new data
